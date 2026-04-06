@@ -1,0 +1,377 @@
+<script setup>
+import { ref } from 'vue'
+import { Trophy, Calendar, CheckCircle, ChevronRight } from 'lucide-vue-next'
+
+const predictions = ref([
+  // JORNADA 1
+  { id: 1, jornada: '1', date: 'Jun 11', home: 'México', away: 'Sudáfrica', homeLogo: 'mx', awayLogo: 'za', prediction: '2 - 0', status: 'Guardado' },
+  { id: 2, jornada: '1', date: 'Jun 12', home: 'EE.UU.', away: 'Paraguay', homeLogo: 'us', awayLogo: 'py', prediction: '1 - 1', status: 'Guardado' },
+  { id: 3, jornada: '1', date: 'Jun 13', home: 'Brasil', away: 'Marruecos', homeLogo: 'br', awayLogo: 'ma', prediction: '3 - 1', status: 'Guardado' },
+  { id: 4, jornada: '1', date: 'Jun 16', home: 'Argentina', away: 'Argelia', homeLogo: 'ar', awayLogo: 'dz', prediction: '2 - 0', status: 'Guardado' },
+  { id: 5, jornada: '1', date: 'Jun 17', home: 'Portugal', away: 'Congo', homeLogo: 'pt', awayLogo: 'cd', prediction: '4 - 0', status: 'Guardado' },
+  { id: 6, jornada: '1', date: 'Jun 17', home: 'Inglaterra', away: 'Croacia', homeLogo: 'gb-eng', awayLogo: 'hr', prediction: '1 - 2', status: 'Guardado' },
+  
+  // JORNADA 2
+  { id: 7, jornada: '2', date: 'Jun 18', home: 'México', away: 'Corea Sur', homeLogo: 'mx', awayLogo: 'kr', prediction: '1 - 0', status: 'Guardado' },
+  { id: 8, jornada: '2', date: 'Jun 19', home: 'Brasil', away: 'Haití', homeLogo: 'br', awayLogo: 'ht', prediction: '5 - 0', status: 'Guardado' },
+  { id: 9, jornada: '2', date: 'Jun 20', home: 'Países Bajos', away: 'Suecia', homeLogo: 'nl', awayLogo: 'se', prediction: '2 - 1', status: 'Guardado' },
+  { id: 10, jornada: '2', date: 'Jun 20', home: 'Alemania', away: 'C. Marfil', homeLogo: 'de', awayLogo: 'ci', prediction: '3 - 0', status: 'Guardado' },
+  { id: 11, jornada: '2', date: 'Jun 21', home: 'España', away: 'A. Saudita', homeLogo: 'es', awayLogo: 'sa', prediction: '2 - 0', status: 'Guardado' },
+  { id: 12, jornada: '2', date: 'Jun 22', home: 'Argentina', away: 'Austria', homeLogo: 'ar', awayLogo: 'at', prediction: '1 - 1', status: 'Guardado' },
+
+  // JORNADA 3
+  { id: 13, jornada: '3', date: 'Jun 24', home: 'Rep. Checa', away: 'México', homeLogo: 'cz', awayLogo: 'mx', prediction: '1 - 2', status: 'Guardado' },
+  { id: 14, jornada: '3', date: 'Jun 24', home: 'Escocia', away: 'Brasil', homeLogo: 'gb-sct', awayLogo: 'br', prediction: '0 - 3', status: 'Guardado' },
+  { id: 15, jornada: '3', date: 'Jun 26', home: 'Uruguay', away: 'España', homeLogo: 'uy', awayLogo: 'es', prediction: '1 - 1', status: 'Guardado' },
+  { id: 16, jornada: '3', date: 'Jun 26', home: 'Noruega', away: 'Francia', homeLogo: 'no', awayLogo: 'fr', prediction: '0 - 2', status: 'Guardado' },
+  { id: 17, jornada: '3', date: 'Jun 27', home: 'Colombia', away: 'Portugal', homeLogo: 'co', awayLogo: 'pt', prediction: '2 - 2', status: 'Guardado' },
+  { id: 18, jornada: '3', date: 'Jun 27', home: 'Jordania', away: 'Argentina', homeLogo: 'jo', awayLogo: 'ar', prediction: '0 - 4', status: 'Guardado' },
+])
+</script>
+
+<template>
+  <div class="dashboard-view animate-fade-in">
+    <div class="view-header">
+      <div class="header-main">
+        <h1 class="view-title">Mis Pronósticos</h1>
+        <p class="view-subtitle">Revisa el historial de tus predicciones para la Copa del Mundo 2026.</p>
+      </div>
+      
+      <div class="stats-cards">
+        <div class="stat-card glass-card">
+          <Trophy :size="20" class="stat-icon" />
+          <div class="stat-content">
+            <span class="stat-value">18 / 18</span>
+            <span class="stat-label">Predicciones Completas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Predictions Table -->
+    <div class="table-container glass-card">
+      <table class="predictions-table">
+        <thead>
+          <tr>
+            <th class="text-center">PRONÓSTICO</th>
+            <th class="text-right desktop-only">ESTADO</th>
+            <th class="text-right mobile-only"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="pred in predictions" :key="pred.id" class="table-row">
+            <td class="jornada-cell">
+              <span class="jornada-badge">{{ pred.jornada }}</span>
+            </td>
+            <td class="date-cell-wrapper">
+              <div class="date-cell">
+                <span>{{ pred.date }}</span>
+              </div>
+            </td>
+            <td class="match-cell-wrapper">
+              <div class="match-cell">
+                <div class="team">
+                  <img :src="`https://flagcdn.com/w40/${pred.homeLogo}.png`" :alt="pred.home" class="flag">
+                  <span class="team-name desktop-only">{{ pred.home }}</span>
+                </div>
+                <span class="vs">-</span>
+                <div class="team">
+                  <span class="team-name desktop-only">{{ pred.away }}</span>
+                  <img :src="`https://flagcdn.com/w40/${pred.awayLogo}.png`" :alt="pred.away" class="flag">
+                </div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="prediction-value">{{ pred.prediction }}</span>
+            </td>
+            <td class="text-right">
+              <div class="status-cell">
+                <CheckCircle :size="16" class="status-icon" />
+                <span class="desktop-only">{{ pred.status }}</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dashboard-footer">
+      <p>¿Quieres cambiar algo? <router-link to="/quiniela" class="footer-link">Ir a la Quiniela <ChevronRight :size="16" /></router-link></p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.dashboard-view {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 8rem 2rem 4rem;
+  min-height: 100vh;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 4rem;
+  gap: 2rem;
+}
+
+.view-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.view-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2.5rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.stat-icon {
+  color: var(--primary-color);
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Table Styles */
+.table-container {
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.predictions-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.75rem;
+  min-width: 800px;
+}
+
+.predictions-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.table-row {
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: white;
+  transform: scale(1.005);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.table-row td {
+  padding: 1.25rem 1.5rem;
+  vertical-align: middle;
+}
+
+.table-row td:first-child { border-radius: 8px 0 0 8px; }
+.table-row td:last-child { border-radius: 0 8px 8px 0; }
+
+.jornada-badge {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0.4rem 0.8rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.date-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.date-icon { color: var(--primary-color); }
+
+.match-cell {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 140px;
+}
+
+.flag {
+  width: 28px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.team-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.vs {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.prediction-value {
+  background: var(--text-primary);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+.status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+
+.dashboard-footer {
+  margin-top: 4rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.footer-link {
+  color: var(--primary-color);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+  transform: translateX(5px);
+}
+
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+
+@media (max-width: 1024px) {
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+
+  .dashboard-view {
+    padding: 6rem 1rem 4rem;
+  }
+
+  .view-title { font-size: 2.2rem; }
+
+  .table-container {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .predictions-table {
+    min-width: auto;
+  }
+
+  .predictions-table th {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .table-row td {
+    padding: 1rem 0.5rem;
+  }
+
+  .jornada-badge {
+    padding: 0.2rem 0.4rem;
+    font-size: 10px;
+  }
+
+  .date-cell {
+    font-size: 11px;
+  }
+
+  .match-cell {
+    gap: 0.4rem;
+  }
+
+  .team {
+    min-width: auto;
+    gap: 0.4rem;
+  }
+
+  .flag {
+    width: 24px;
+    height: 16px;
+  }
+
+  .vs {
+    font-size: 10px;
+    margin: 0 0.1rem;
+  }
+
+  .prediction-value {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    min-width: 55px;
+    display: inline-block;
+  }
+
+  .status-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+</style>
