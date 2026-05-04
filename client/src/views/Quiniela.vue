@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import MatchCard from '../components/MatchCard.vue'
-import { Timer, Trophy, ChevronRight } from 'lucide-vue-next'
+import { Timer, Trophy, ChevronRight, Settings } from 'lucide-vue-next'
+
+const router = useRouter()
 
 // Countdown logic
 const countdown = ref({
@@ -10,22 +13,34 @@ const countdown = ref({
   minutes: 0,
   seconds: 0
 })
+const countdownFinal = ref({
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0
+})
 
 const targetDate = new Date('2026-06-11T18:00:00').getTime()
+const targetDateFinal = new Date('2026-07-19T12:00:00').getTime()
 
 const updateCountdown = () => {
   const now = new Date().getTime()
-  const distance = targetDate - now
-
-  if (distance < 0) {
-    countdown.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
-    return
+  
+  const distGroup = targetDate - now
+  if (distGroup > 0) {
+    countdown.value.days = Math.floor(distGroup / (1000 * 60 * 60 * 24))
+    countdown.value.hours = Math.floor((distGroup % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    countdown.value.minutes = Math.floor((distGroup % (1000 * 60 * 60)) / (1000 * 60))
+    countdown.value.seconds = Math.floor((distGroup % (1000 * 60)) / 1000)
   }
 
-  countdown.value.days = Math.floor(distance / (1000 * 60 * 60 * 24))
-  countdown.value.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-  countdown.value.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-  countdown.value.seconds = Math.floor((distance % (1000 * 60)) / 1000)
+  const distFinal = targetDateFinal - now
+  if (distFinal > 0) {
+    countdownFinal.value.days = Math.floor(distFinal / (1000 * 60 * 60 * 24))
+    countdownFinal.value.hours = Math.floor((distFinal % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    countdownFinal.value.minutes = Math.floor((distFinal % (1000 * 60 * 60)) / (1000 * 60))
+    countdownFinal.value.seconds = Math.floor((distFinal % (1000 * 60)) / 1000)
+  }
 }
 
 let timer
@@ -113,15 +128,45 @@ const nextMatchday = () => {
   }
 }
 
-const prevMatchday = () => {
-  if (currentMatchdayIndex.value > 0) {
-    currentMatchdayIndex.value--
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+const showKnockoutPhase = ref(false)
+
+const toggleKnockoutPhase = () => {
+  showKnockoutPhase.value = !showKnockoutPhase.value
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const qualifiedTeams = ref([
+  { id: 1, name: 'México', logo: 'https://flagcdn.com/w160/mx.png' },
+  { id: 2, name: 'Estados Unidos', logo: 'https://flagcdn.com/w160/us.png' },
+  { id: 3, name: 'Brasil', logo: 'https://flagcdn.com/w160/br.png' },
+  { id: 4, name: 'Argentina', logo: 'https://flagcdn.com/w160/ar.png' },
+  { id: 5, name: 'Inglaterra', logo: 'https://flagcdn.com/w160/gb-eng.png' },
+  { id: 6, name: 'Francia', logo: 'https://flagcdn.com/w160/fr.png' },
+  { id: 7, name: 'España', logo: 'https://flagcdn.com/w160/es.png' },
+  { id: 8, name: 'Alemania', logo: 'https://flagcdn.com/w160/de.png' },
+  { id: 9, name: 'Portugal', logo: 'https://flagcdn.com/w160/pt.png' },
+  { id: 10, name: 'Países Bajos', logo: 'https://flagcdn.com/w160/nl.png' },
+  { id: 11, name: 'Uruguay', logo: 'https://flagcdn.com/w160/uy.png' },
+  { id: 12, name: 'Colombia', logo: 'https://flagcdn.com/w160/co.png' },
+  { id: 13, name: 'Croacia', logo: 'https://flagcdn.com/w160/hr.png' },
+  { id: 14, name: 'Marruecos', logo: 'https://flagcdn.com/w160/ma.png' },
+  { id: 15, name: 'Senegal', logo: 'https://flagcdn.com/w160/sn.png' },
+  { id: 16, name: 'Japón', logo: 'https://flagcdn.com/w160/jp.png' }
+])
+
+const selectedChampion = ref(null)
+
+const selectTeam = (teamId) => {
+  selectedChampion.value = teamId
 }
 
 const saveAll = () => {
-  alert('¡Todas tus predicciones se han guardado con éxito!')
+  if (currentMatchdayIndex.value === matchdays.value.length - 1 || showKnockoutPhase.value) {
+    alert('¡Todas tus predicciones se han guardado con éxito!')
+    router.push('/mis-pronosticos')
+  } else {
+    alert('¡Tu progreso ha sido guardado!')
+  }
 }
 </script>
 
@@ -196,13 +241,20 @@ const saveAll = () => {
 
     <!-- QUINIELA FLOW -->
     <div v-else class="quiniela-content">
-      <!-- Progress Indicator -->
-      <div class="progress-bar-container">
-        <div 
-          class="progress-bar-fill"
-          :style="{ width: ((currentMatchdayIndex + 1) / matchdays.length * 100) + '%' }"
-        ></div>
-      </div>
+      
+      <!-- DEMO TOGGLE BUTTON -->
+      <button class="demo-toggle-btn" @click="toggleKnockoutPhase" title="Cambiar vista de fase">
+        <Settings :size="24" />
+      </button>
+
+      <template v-if="!showKnockoutPhase">
+        <!-- Progress Indicator -->
+        <div class="progress-bar-container">
+          <div 
+            class="progress-bar-fill"
+            :style="{ width: ((currentMatchdayIndex + 1) / matchdays.length * 100) + '%' }"
+          ></div>
+        </div>
 
     <div class="view-header">
       <div class="countdown-banner glass-card animate-fade-in">
@@ -257,31 +309,96 @@ const saveAll = () => {
       </transition>
     </div>
 
-    <div class="actions-footer">
-      <button 
-        v-if="currentMatchdayIndex > 0" 
-        @click="prevMatchday" 
-        class="btn-secondary"
-      >
-        ANTERIOR
-      </button>
+      <div class="actions-footer">
+        <button 
+          v-if="currentMatchdayIndex > 0" 
+          @click="prevMatchday" 
+          class="btn-secondary"
+        >
+          ANTERIOR
+        </button>
 
-      <button 
-        @click="saveAll" 
-        class="btn-save-all"
-      >
-        {{ currentMatchdayIndex === matchdays.length - 1 ? 'GUARDAR TODO' : 'GUARDAR PROGRESO' }}
-      </button>
+        <button 
+          @click="saveAll" 
+          class="btn-save-all"
+        >
+          {{ currentMatchdayIndex === matchdays.length - 1 ? 'GUARDAR TODO' : 'GUARDAR PROGRESO' }}
+        </button>
 
-      <button 
-        v-if="currentMatchdayIndex < matchdays.length - 1" 
-        @click="nextMatchday" 
-        class="btn-primary btn-next-flow"
-      >
-        SIGUIENTE JORNADA
-        <ChevronRight :size="20" />
-      </button>
-    </div>
+        <button 
+          v-if="currentMatchdayIndex < matchdays.length - 1" 
+          @click="nextMatchday" 
+          class="btn-primary btn-next-flow"
+        >
+          SIGUIENTE JORNADA
+          <ChevronRight :size="20" />
+        </button>
+      </div>
+      </template>
+
+      <!-- KNOCKOUT PHASE SELECTION -->
+      <template v-else>
+        <div class="knockout-phase animate-fade-in">
+          <div class="view-header">
+            <div class="countdown-banner glass-card animate-fade-in">
+              <div class="countdown-label">
+                <Timer :size="20" class="text-green" />
+                <span>FINAL EN:</span>
+              </div>
+              <div class="countdown-timer">
+                <div class="timer-unit">
+                  <span class="timer-value">{{ countdownFinal.days }}</span>
+                  <span class="timer-desc">DÍAS</span>
+                </div>
+                <div class="timer-sep">:</div>
+                <div class="timer-unit">
+                  <span class="timer-value">{{ String(countdownFinal.hours).padStart(2, '0') }}</span>
+                  <span class="timer-desc">HORAS</span>
+                </div>
+                <div class="timer-sep">:</div>
+                <div class="timer-unit">
+                  <span class="timer-value">{{ String(countdownFinal.minutes).padStart(2, '0') }}</span>
+                  <span class="timer-desc">MINS</span>
+                </div>
+                <div class="timer-sep">:</div>
+                <div class="timer-unit">
+                  <span class="timer-value">{{ String(countdownFinal.seconds).padStart(2, '0') }}</span>
+                  <span class="timer-desc">SEGS</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="title-section">
+              <h1 class="view-title">Fase Final - Campeón</h1>
+              <p class="view-subtitle">Selecciona al equipo que crees que será el <strong class="highlight-text">Campeón del Mundo</strong> de entre los clasificados a la siguiente ronda.</p>
+            </div>
+          </div>
+
+          <div class="teams-grid">
+            <div 
+              v-for="team in qualifiedTeams" 
+              :key="team.id"
+              class="team-card glass-card"
+              :class="{ 'selected': selectedChampion === team.id }"
+              @click="selectTeam(team.id)"
+            >
+              <img :src="team.logo" :alt="team.name" class="team-logo" />
+              <span class="team-name">{{ team.name }}</span>
+            </div>
+          </div>
+
+          <div class="actions-footer">
+            <button 
+              @click="saveAll" 
+              class="btn-save-all"
+              :disabled="!selectedChampion"
+              :class="{ 'opacity-50 cursor-not-allowed': !selectedChampion }"
+            >
+              GUARDAR PRONÓSTICO FINAL
+            </button>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -589,11 +706,84 @@ const saveAll = () => {
   border-radius: 0;
 }
 
-.btn-save-all:hover {
+.btn-save-all:hover:not(:disabled) {
   background: #f8fafc;
   border-color: var(--text-primary);
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.btn-save-all:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Demo Toggle Button */
+.demo-toggle-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 0.5rem;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.demo-toggle-btn:hover {
+  background: #004d35;
+  padding-right: 1rem;
+}
+
+/* Knockout Phase */
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.team-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.team-card.selected {
+  border-color: var(--primary-color);
+  background: rgba(0, 104, 71, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 104, 71, 0.15);
+}
+
+.team-logo {
+  width: 80px;
+  height: 53px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.team-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  text-align: center;
 }
 
 /* Transitions */

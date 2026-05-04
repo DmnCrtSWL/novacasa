@@ -25,13 +25,20 @@ const routes = [
   {
     path: '/reglas',
     name: 'Rules',
-    component: () => import('../views/Placeholder.vue')
+    component: () => import('../views/Rules.vue')
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 export default router

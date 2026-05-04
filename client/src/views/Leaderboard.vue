@@ -1,8 +1,31 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Medal, Award, TrendingUp } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { Medal, Award, TrendingUp, Trophy } from 'lucide-vue-next'
 
 const leaderboard = ref([])
+
+const currentPage = ref(1)
+const itemsPerPage = 20
+
+const paginatedLeaderboard = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return leaderboard.value.slice(start, end)
+})
+
+const totalPages = computed(() => Math.ceil(leaderboard.value.length / itemsPerPage))
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
+
+const goToPage = (page) => {
+  currentPage.value = page
+}
 
 onMounted(() => {
   // Generate 100 random users
@@ -66,6 +89,7 @@ const getMedalColor = (rank) => {
         <div class="rules-info">
           <span class="rule"><Award :size="16" /> <b>2 pts:</b> Marcador exacto.</span>
           <span class="rule"><TrendingUp :size="16" /> <b>1 pt:</b> Atinar ganador/empate.</span>
+          <span class="rule"><Trophy :size="16" /> <b>Campeón seleccionado</b> <span class="text-faded">(+3 puntos)</span></span>
         </div>
       </div>
     </div>
@@ -81,7 +105,7 @@ const getMedalColor = (rank) => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in leaderboard" :key="user.id" class="table-row" :class="{'top-tier': user.rank <= 3}">
+          <tr v-for="user in paginatedLeaderboard" :key="user.id" class="table-row" :class="{'top-tier': user.rank <= 3}">
             <td class="rank-col">
               <div class="rank-badge" :class="`rank-${user.rank}`">
                 <Medal v-if="user.rank <= 3" :size="20" :color="getMedalColor(user.rank)" class="medal-icon" />
@@ -105,6 +129,37 @@ const getMedalColor = (rank) => {
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div class="pagination" v-if="totalPages > 1">
+        <button 
+          @click="prevPage" 
+          :disabled="currentPage === 1"
+          class="page-btn"
+        >
+          Anterior
+        </button>
+        
+        <div class="page-numbers">
+          <button 
+            v-for="page in totalPages" 
+            :key="page"
+            @click="goToPage(page)"
+            class="page-num-btn"
+            :class="{ active: currentPage === page }"
+          >
+            {{ page }}
+          </button>
+        </div>
+
+        <button 
+          @click="nextPage" 
+          :disabled="currentPage === totalPages"
+          class="page-btn"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -155,6 +210,11 @@ const getMedalColor = (rank) => {
   gap: 0.5rem;
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+.text-faded {
+  color: #94a3b8;
+  font-size: 0.75rem;
 }
 
 /* Table Styles */
@@ -284,11 +344,87 @@ const getMedalColor = (rank) => {
   color: var(--text-secondary);
 }
 
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1rem 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.page-btn {
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-num-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-num-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.page-num-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 @media (max-width: 768px) {
   .leaderboard-view { padding: 6rem 1rem 3rem; }
   .view-header { flex-direction: column; align-items: stretch; gap: 1.5rem; }
   .view-title { font-size: 2.25rem; }
   .table-container { padding: 0.5rem; }
   .points-col { width: 80px; padding-right: 1rem !important; }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .page-numbers {
+    order: -1;
+  }
+  .page-btn {
+    width: 100%;
+  }
 }
 </style>
