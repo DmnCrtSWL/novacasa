@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { API_BASE_URL } from '../config'
 
 const router = useRouter()
 
@@ -35,7 +36,7 @@ async function handleSave() {
   loading.value = true
   try {
     const token = localStorage.getItem('token')
-    const res = await fetch('http://localhost:3000/api/auth/profile', {
+    const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

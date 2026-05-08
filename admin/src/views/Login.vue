@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Lock, Phone } from 'lucide-vue-next'
+import { API_BASE_URL } from '../config'
 
 const router = useRouter()
 const whatsapp = ref('')
@@ -14,7 +15,7 @@ const handleLogin = async () => {
   error.value = null
   
   try {
-    const res = await fetch('http://localhost:3000/api/auth/login', {
+    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

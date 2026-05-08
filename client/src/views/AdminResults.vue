@@ -1,13 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Trophy, Save, CheckCircle } from 'lucide-vue-next'
+import { API_BASE_URL } from '../config'
 
 const matches = ref([])
 const isLoading = ref(true)
 
 const fetchMatches = async () => {
   try {
-    const res = await fetch('http://localhost:3000/api/matches')
+    const res = await fetch(`${API_BASE_URL}/api/matches`)
     if (res.ok) {
       matches.value = await res.json()
     }
@@ -21,7 +22,7 @@ const fetchMatches = async () => {
 const saveResult = async (match) => {
   const token = localStorage.getItem('token')
   try {
-    const res = await fetch(`http://localhost:3000/api/matches/${match.id}/result`, {
+    const res = await fetch(`${API_BASE_URL}/api/matches/${match.id}/result`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

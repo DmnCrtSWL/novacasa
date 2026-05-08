@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { Trophy, CheckCircle, ChevronRight, Star } from 'lucide-vue-next'
+import { API_BASE_URL } from '../config'
 
 
 const matchSchedule = [
@@ -44,8 +45,8 @@ const fetchDashboardData = async () => {
 
     // Fetch matches and predictions in parallel
     const [matchesRes, predsRes] = await Promise.all([
-      fetch('http://localhost:3000/api/matches'),
-      fetch('http://localhost:3000/api/predictions', {
+      fetch(`${API_BASE_URL}/api/matches`),
+      fetch(`${API_BASE_URL}/api/predictions`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
     ])

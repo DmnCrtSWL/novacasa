@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Medal, Award, TrendingUp, Trophy } from 'lucide-vue-next'
+import { API_BASE_URL } from '../config'
 
 const leaderboard = ref([])
 
@@ -29,7 +30,7 @@ const goToPage = (page) => {
 
 const fetchLeaderboard = async () => {
   try {
-    const res = await fetch('http://localhost:3000/api/leaderboard')
+    const res = await fetch(`${API_BASE_URL}/api/leaderboard`)
     if (res.ok) {
       leaderboard.value = await res.json()
     }

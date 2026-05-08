@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Trophy, TrendingUp, Filter, Phone, Calendar, User, RefreshCw, Download, Mail } from 'lucide-vue-next'
+import { API_BASE_URL } from '../config'
 
 const users = ref([])
 const loading = ref(true)
@@ -16,7 +17,7 @@ const fetchUsers = async () => {
       return
     }
 
-    const res = await fetch('http://localhost:3000/api/admin/users', {
+    const res = await fetch(`${API_BASE_URL}/api/admin/users`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
 

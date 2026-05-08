@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MatchCard from '../components/MatchCard.vue'
 import { Timer, Trophy, ChevronRight } from 'lucide-vue-next'
+import { API_BASE_URL } from '../config'
 
 const router = useRouter()
 const route = useRoute()
@@ -49,7 +50,7 @@ const fetchPredictions = async () => {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    const res = await fetch('http://localhost:3000/api/predictions', {
+    const res = await fetch(`${API_BASE_URL}/api/predictions`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     
@@ -240,7 +241,7 @@ const saveAll = async () => {
       md.matches.forEach(m => { allMatches.push(m) })
     })
 
-    const res = await fetch('http://localhost:3000/api/predictions', {
+    const res = await fetch(`${API_BASE_URL}/api/predictions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
