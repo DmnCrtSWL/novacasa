@@ -97,6 +97,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(timer)
+  if (toastTimer) clearTimeout(toastTimer)
 })
 
 const isAuthenticated = ref(!!localStorage.getItem('token'))
@@ -495,21 +496,22 @@ const saveAll = async () => {
     </div>
   </div>
 
-  <!-- Toast notification -->
-  <transition name="toast-slide">
-    <div v-if="toast.show" class="toast-overlay" @click.self="closeToast">
-      <div class="toast-card" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'">
-        <div class="toast-icon">
-          <svg v-if="toast.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+  <teleport to="body">
+    <transition name="toast-slide">
+      <div v-if="toast.show" class="toast-overlay" @click.self="closeToast">
+        <div class="toast-card" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'">
+          <div class="toast-icon">
+            <svg v-if="toast.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </div>
+          <p class="toast-message">{{ toast.message }}</p>
+          <button class="toast-close" @click="closeToast">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
         </div>
-        <p class="toast-message">{{ toast.message }}</p>
-        <button class="toast-close" @click="closeToast">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </teleport>
 </template>
 
 <style scoped>
@@ -902,7 +904,10 @@ const saveAll = async () => {
   }
 }
 
-/* Toast */
+
+</style>
+
+<style>
 .toast-overlay {
   position: fixed;
   inset: 0;
@@ -928,13 +933,8 @@ const saveAll = async () => {
   position: relative;
 }
 
-.toast-success {
-  border-color: #006847;
-}
-
-.toast-error {
-  border-color: #CE1126;
-}
+.toast-success { border-color: #006847; }
+.toast-error   { border-color: #CE1126; }
 
 .toast-icon {
   flex-shrink: 0;
@@ -946,20 +946,10 @@ const saveAll = async () => {
   justify-content: center;
 }
 
-.toast-success .toast-icon {
-  background: rgba(0, 104, 71, 0.1);
-  color: #006847;
-}
+.toast-success .toast-icon { background: rgba(0, 104, 71, 0.1); color: #006847; }
+.toast-error   .toast-icon { background: rgba(206, 17, 38, 0.1); color: #CE1126; }
 
-.toast-error .toast-icon {
-  background: rgba(206, 17, 38, 0.1);
-  color: #CE1126;
-}
-
-.toast-icon svg {
-  width: 18px;
-  height: 18px;
-}
+.toast-icon svg { width: 18px; height: 18px; }
 
 .toast-message {
   flex: 1;
@@ -986,15 +976,8 @@ const saveAll = async () => {
   padding: 0;
 }
 
-.toast-close:hover {
-  background: #f0f0f0;
-  color: #1a1a2e;
-}
-
-.toast-close svg {
-  width: 14px;
-  height: 14px;
-}
+.toast-close:hover { background: #f0f0f0; color: #1a1a2e; }
+.toast-close svg   { width: 14px; height: 14px; }
 
 .toast-slide-enter-active,
 .toast-slide-leave-active {
