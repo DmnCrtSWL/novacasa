@@ -10,22 +10,57 @@ const routes = [
   {
     path: '/quiniela',
     name: 'Quiniela',
-    component: () => import('../views/Quiniela.vue')
+    component: () => import('../views/Quiniela.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/mis-pronosticos',
     name: 'MyPredictions',
-    component: () => import('../views/Dashboard.vue')
+    component: () => import('../views/Dashboard.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/tabla-general',
     name: 'Leaderboard',
-    component: () => import('../views/Leaderboard.vue')
+    component: () => import('../views/Leaderboard.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/reglas',
     name: 'Rules',
     component: () => import('../views/Rules.vue')
+  },
+  {
+    path: '/registro',
+    name: 'Register',
+    component: () => import('../views/Register.vue')
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/Login.vue')
+  },
+  {
+    path: '/recuperar-contrasena',
+    name: 'ForgotPassword',
+    component: () => import('../views/ForgotPassword.vue')
+  },
+  {
+    path: '/restablecer-contrasena',
+    name: 'ResetPassword',
+    component: () => import('../views/ResetPassword.vue')
+  },
+  {
+    path: '/perfil',
+    name: 'Profile',
+    component: () => import('../views/Profile.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/resultados',
+    name: 'AdminResults',
+    component: () => import('../views/AdminResults.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ]
 
@@ -38,6 +73,20 @@ const router = createRouter({
     } else {
       return { top: 0 }
     }
+  }
+})
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('token')
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const isAdmin = user && user.is_admin
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresAdmin && !isAdmin) {
+    next({ name: 'Home' })
+  } else {
+    next()
   }
 })
 

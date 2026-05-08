@@ -3,4 +3,18 @@ import App from './App.vue'
 import router from './router'
 import './assets/main.css'
 
-createApp(App).use(router).mount('#app')
+const app = createApp(App)
+
+app.directive('click-outside', {
+  mounted(el, binding) {
+    el._clickOutside = (e) => {
+      if (!el.contains(e.target)) binding.value()
+    }
+    document.addEventListener('click', el._clickOutside)
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el._clickOutside)
+  },
+})
+
+app.use(router).mount('#app')

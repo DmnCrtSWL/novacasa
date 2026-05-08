@@ -1,8 +1,27 @@
 <script setup>
-import { ref } from 'vue'
-import { Menu, X } from 'lucide-vue-next'
+import { ref, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Menu, X, ChevronDown } from 'lucide-vue-next'
 
+const router = useRouter()
+const route = useRoute()
 const isMenuOpen = ref(false)
+const isDropdownOpen = ref(false)
+
+const user = ref(null)
+
+const updateUser = () => {
+  const stored = localStorage.getItem('user')
+  user.value = stored ? JSON.parse(stored) : null
+}
+
+onMounted(() => {
+  updateUser()
+})
+
+watch(() => route.path, () => {
+  updateUser()
+})
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
@@ -10,6 +29,23 @@ const toggleMenu = () => {
 
 const closeMenu = () => {
   isMenuOpen.value = false
+}
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value
+}
+
+const closeDropdown = () => {
+  isDropdownOpen.value = false
+}
+
+function logout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  updateUser()
+  closeMenu()
+  closeDropdown()
+  router.push('/login')
 }
 </script>
 
@@ -29,6 +65,22 @@ const closeMenu = () => {
       </div>
 
       <div class="nav-actions">
+        <div class="auth-buttons">
+          <template v-if="user">
+            <div class="dropdown-wrapper" v-click-outside="closeDropdown">
+              <button class="btn-register btn-cuenta" @click="toggleDropdown">
+                Cuenta <ChevronDown :size="14" :class="{ 'chevron-open': isDropdownOpen }" />
+              </button>
+              <div v-if="isDropdownOpen" class="dropdown-menu">
+                <router-link to="/perfil" class="dropdown-item" @click="closeDropdown">Perfil</router-link>
+                <button class="dropdown-item dropdown-item-danger" @click="logout">Salir</button>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <router-link to="/login" class="btn-register">Entrar</router-link>
+          </template>
+        </div>
         <button v-if="!isMenuOpen" class="mobile-menu" @click="toggleMenu">
           <Menu :size="24" />
         </button>
@@ -46,6 +98,14 @@ const closeMenu = () => {
         <router-link to="/mis-pronosticos" class="mobile-nav-link" @click="closeMenu">Mis Pronósticos</router-link>
         <router-link to="/tabla-general" class="mobile-nav-link" @click="closeMenu">Tabla General</router-link>
         <router-link to="/reglas" class="mobile-nav-link" @click="closeMenu">Reglas</router-link>
+        <div class="mobile-auth-divider"></div>
+        <template v-if="user">
+          <router-link to="/perfil" class="mobile-nav-link" @click="closeMenu">Perfil</router-link>
+          <button class="mobile-nav-link mobile-nav-logout" @click="logout">Salir</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="mobile-nav-link mobile-nav-register" @click="closeMenu">Entrar</router-link>
+        </template>
       </div>
     </div>
   </nav>
@@ -114,9 +174,123 @@ const closeMenu = () => {
   color: var(--primary-color);
 }
 
+
 .nav-actions {
   display: flex;
   align-items: center;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+
+.btn-register {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  background: #006847;
+  border: 1.5px solid #006847;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-register:hover {
+  background: #00573c;
+  border-color: #00573c;
+}
+
+.dropdown-wrapper {
+  position: relative;
+}
+
+.btn-cuenta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
+.chevron-open {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  overflow: hidden;
+  z-index: 3000;
+  animation: dropIn 0.15s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-item-danger {
+  color: #CE1126;
+}
+
+.dropdown-item-danger:hover {
+  background: #fdecea;
+}
+
+.mobile-auth-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 0.5rem 0;
+}
+
+.mobile-user-greeting {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.mobile-nav-register {
+  color: #006847 !important;
+}
+
+.mobile-nav-logout {
+  color: #CE1126 !important;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
 }
 
 .mobile-menu {
@@ -191,6 +365,7 @@ const closeMenu = () => {
   transition: all 0.3s ease;
 }
 
+
 .mobile-nav-link:hover, .mobile-nav-link.router-link-active {
   color: var(--primary-color);
   padding-left: 10px;
@@ -198,6 +373,9 @@ const closeMenu = () => {
 
 @media (max-width: 768px) {
   .nav-links {
+    display: none;
+  }
+  .auth-buttons {
     display: none;
   }
   .mobile-menu {

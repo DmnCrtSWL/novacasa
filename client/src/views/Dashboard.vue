@@ -1,32 +1,94 @@
 <script setup>
-import { ref } from 'vue'
-import { Trophy, Calendar, CheckCircle, ChevronRight } from 'lucide-vue-next'
+import { ref, onMounted, computed } from 'vue'
+import { Trophy, CheckCircle, ChevronRight, Star } from 'lucide-vue-next'
 
-const predictions = ref([
+
+const matchSchedule = [
   // JORNADA 1
-  { id: 1, jornada: '1', date: 'Jun 11', home: 'México', away: 'Sudáfrica', homeLogo: 'mx', awayLogo: 'za', prediction: '2 - 0', status: 'Guardado' },
-  { id: 2, jornada: '1', date: 'Jun 12', home: 'EE.UU.', away: 'Paraguay', homeLogo: 'us', awayLogo: 'py', prediction: '1 - 1', status: 'Guardado' },
-  { id: 3, jornada: '1', date: 'Jun 13', home: 'Brasil', away: 'Marruecos', homeLogo: 'br', awayLogo: 'ma', prediction: '3 - 1', status: 'Guardado' },
-  { id: 4, jornada: '1', date: 'Jun 16', home: 'Argentina', away: 'Argelia', homeLogo: 'ar', awayLogo: 'dz', prediction: '2 - 0', status: 'Guardado' },
-  { id: 5, jornada: '1', date: 'Jun 17', home: 'Portugal', away: 'Congo', homeLogo: 'pt', awayLogo: 'cd', prediction: '4 - 0', status: 'Guardado' },
-  { id: 6, jornada: '1', date: 'Jun 17', home: 'Inglaterra', away: 'Croacia', homeLogo: 'gb-eng', awayLogo: 'hr', prediction: '1 - 2', status: 'Guardado' },
+  { id: 1, jornada: '1', date: 'Jun 11', home: 'México', away: 'Sudáfrica', homeLogo: 'mx', awayLogo: 'za' },
+  { id: 2, jornada: '1', date: 'Jun 12', home: 'Estados Unidos', away: 'Paraguay', homeLogo: 'us', awayLogo: 'py' },
+  { id: 3, jornada: '1', date: 'Jun 13', home: 'Brasil', away: 'Marruecos', homeLogo: 'br', awayLogo: 'ma' },
+  { id: 4, jornada: '1', date: 'Jun 16', home: 'Argentina', away: 'Argelia', homeLogo: 'ar', awayLogo: 'dz' },
+  { id: 5, jornada: '1', date: 'Jun 17', home: 'Portugal', away: 'RD Congo', homeLogo: 'pt', awayLogo: 'cd' },
+  { id: 6, jornada: '1', date: 'Jun 17', home: 'Inglaterra', away: 'Croacia', homeLogo: 'gb-eng', awayLogo: 'hr' },
   
   // JORNADA 2
-  { id: 7, jornada: '2', date: 'Jun 18', home: 'México', away: 'Corea Sur', homeLogo: 'mx', awayLogo: 'kr', prediction: '1 - 0', status: 'Guardado' },
-  { id: 8, jornada: '2', date: 'Jun 19', home: 'Brasil', away: 'Haití', homeLogo: 'br', awayLogo: 'ht', prediction: '5 - 0', status: 'Guardado' },
-  { id: 9, jornada: '2', date: 'Jun 20', home: 'Países Bajos', away: 'Suecia', homeLogo: 'nl', awayLogo: 'se', prediction: '2 - 1', status: 'Guardado' },
-  { id: 10, jornada: '2', date: 'Jun 20', home: 'Alemania', away: 'C. Marfil', homeLogo: 'de', awayLogo: 'ci', prediction: '3 - 0', status: 'Guardado' },
-  { id: 11, jornada: '2', date: 'Jun 21', home: 'España', away: 'A. Saudita', homeLogo: 'es', awayLogo: 'sa', prediction: '2 - 0', status: 'Guardado' },
-  { id: 12, jornada: '2', date: 'Jun 22', home: 'Argentina', away: 'Austria', homeLogo: 'ar', awayLogo: 'at', prediction: '1 - 1', status: 'Guardado' },
+  { id: 7, jornada: '2', date: 'Jun 18', home: 'México', away: 'Corea del Sur', homeLogo: 'mx', awayLogo: 'kr' },
+  { id: 8, jornada: '2', date: 'Jun 19', home: 'Brasil', away: 'Haití', homeLogo: 'br', awayLogo: 'ht' },
+  { id: 9, jornada: '2', date: 'Jun 20', home: 'Países Bajos', away: 'Suecia', homeLogo: 'nl', awayLogo: 'se' },
+  { id: 10, jornada: '2', date: 'Jun 20', home: 'Alemania', away: 'Costa Marfil', homeLogo: 'de', awayLogo: 'ci' },
+  { id: 11, jornada: '2', date: 'Jun 21', home: 'España', away: 'Arabia Saudita', homeLogo: 'es', awayLogo: 'sa' },
+  { id: 12, jornada: '2', date: 'Jun 22', home: 'Argentina', away: 'Austria', homeLogo: 'ar', awayLogo: 'at' },
 
   // JORNADA 3
-  { id: 13, jornada: '3', date: 'Jun 24', home: 'Rep. Checa', away: 'México', homeLogo: 'cz', awayLogo: 'mx', prediction: '1 - 2', status: 'Guardado' },
-  { id: 14, jornada: '3', date: 'Jun 24', home: 'Escocia', away: 'Brasil', homeLogo: 'gb-sct', awayLogo: 'br', prediction: '0 - 3', status: 'Guardado' },
-  { id: 15, jornada: '3', date: 'Jun 26', home: 'Uruguay', away: 'España', homeLogo: 'uy', awayLogo: 'es', prediction: '1 - 1', status: 'Guardado' },
-  { id: 16, jornada: '3', date: 'Jun 26', home: 'Noruega', away: 'Francia', homeLogo: 'no', awayLogo: 'fr', prediction: '0 - 2', status: 'Guardado' },
-  { id: 17, jornada: '3', date: 'Jun 27', home: 'Colombia', away: 'Portugal', homeLogo: 'co', awayLogo: 'pt', prediction: '2 - 2', status: 'Guardado' },
-  { id: 18, jornada: '3', date: 'Jun 27', home: 'Jordania', away: 'Argentina', homeLogo: 'jo', awayLogo: 'ar', prediction: '0 - 4', status: 'Guardado' },
-])
+  { id: 13, jornada: '3', date: 'Jun 24', home: 'República Checa', away: 'México', homeLogo: 'cz', awayLogo: 'mx' },
+  { id: 14, jornada: '3', date: 'Jun 24', home: 'Escocia', away: 'Brasil', homeLogo: 'gb-sct', awayLogo: 'br' },
+  { id: 15, jornada: '3', date: 'Jun 26', home: 'Uruguay', away: 'España', homeLogo: 'uy', awayLogo: 'es' },
+  { id: 16, jornada: '3', date: 'Jun 26', home: 'Noruega', away: 'Francia', homeLogo: 'no', awayLogo: 'fr' },
+  { id: 17, jornada: '3', date: 'Jun 27', home: 'Colombia', away: 'Portugal', homeLogo: 'co', awayLogo: 'pt' },
+  { id: 18, jornada: '3', date: 'Jun 27', home: 'Jordania', away: 'Argentina', homeLogo: 'jo', awayLogo: 'ar' },
+]
+
+const predictions = ref(matchSchedule.map(m => ({
+  ...m,
+  prediction: 'Pendiente',
+  status: 'Sin completar'
+})))
+const totalMatches = ref(matchSchedule.length)
+const completedMatches = ref(0)
+
+const fetchDashboardData = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    // Fetch matches and predictions in parallel
+    const [matchesRes, predsRes] = await Promise.all([
+      fetch('http://localhost:3000/api/matches'),
+      fetch('http://localhost:3000/api/predictions', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+    ])
+    
+    if (matchesRes.ok && predsRes.ok) {
+      const matchesData = await matchesRes.json()
+      const predsData = await predsRes.json()
+      const userPreds = predsData.predictions
+
+      predictions.value = matchesData.map(match => {
+        const found = userPreds.find(p => p.match_id === match.id)
+        
+        // Format real result
+        let realResult = 'Pendiente'
+        if (match.home_score_real !== null && match.away_score_real !== null) {
+          realResult = `${match.home_score_real} - ${match.away_score_real}`
+        }
+
+        return {
+          id: match.id,
+          jornada: match.jornada,
+          date: match.date_text,
+          home: match.home_team,
+          away: match.away_team,
+          homeLogo: match.home_logo,
+          awayLogo: match.away_logo,
+          prediction: found ? `${found.home_score} - ${found.away_score}` : 'Pendiente',
+          realResult: realResult,
+          status: found ? 'Guardado' : 'Sin completar'
+        }
+      })
+
+      completedMatches.value = userPreds.length
+      totalMatches.value = matchesData.length
+    }
+  } catch (err) {
+    console.error('Error fetching dashboard data:', err)
+  }
+}
+
+onMounted(() => {
+  fetchDashboardData()
+})
 </script>
 
 <template>
@@ -41,8 +103,15 @@ const predictions = ref([
         <div class="stat-card glass-card">
           <Trophy :size="20" class="stat-icon" />
           <div class="stat-content">
-            <span class="stat-value">18 / 18</span>
+            <span class="stat-value">{{ completedMatches }} / {{ totalMatches }}</span>
             <span class="stat-label">Predicciones Completas</span>
+          </div>
+        </div>
+        <div class="stat-card glass-card">
+          <Star :size="20" class="stat-icon stat-icon-champion" />
+          <div class="stat-content">
+            <span class="stat-value">N/D</span>
+            <span class="stat-label">Campeón Seleccionado</span>
           </div>
         </div>
       </div>
@@ -53,9 +122,12 @@ const predictions = ref([
       <table class="predictions-table">
         <thead>
           <tr>
+            <th>JORNADA</th>
+            <th class="desktop-only">FECHA</th>
+            <th>PARTIDO</th>
             <th class="text-center">PRONÓSTICO</th>
-            <th class="text-right desktop-only">ESTADO</th>
-            <th class="text-right mobile-only"></th>
+            <th class="text-center">RESULTADO</th>
+            <th class="text-right">ESTADO</th>
           </tr>
         </thead>
         <tbody>
@@ -84,8 +156,17 @@ const predictions = ref([
             <td class="text-center">
               <span class="prediction-value">{{ pred.prediction }}</span>
             </td>
+            <td class="text-center">
+              <span class="real-result-value" :class="{ 'pending': pred.realResult === 'Pendiente' }">
+                {{ pred.realResult }}
+              </span>
+            </td>
             <td class="text-right">
-              <div class="status-cell">
+              <div 
+                class="status-cell clickable" 
+                :class="{ 'status-pending': pred.status === 'Sin completar' }"
+                @click="$router.push(`/quiniela?jornada=${pred.jornada}`)"
+              >
                 <CheckCircle :size="16" class="status-icon" />
                 <span class="desktop-only">{{ pred.status }}</span>
               </div>
@@ -129,6 +210,12 @@ const predictions = ref([
   color: var(--text-secondary);
 }
 
+.stats-cards {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .stat-card {
   display: flex;
   align-items: center;
@@ -139,6 +226,10 @@ const predictions = ref([
 
 .stat-icon {
   color: var(--primary-color);
+}
+
+.stat-icon-champion {
+  color: #CE1126;
 }
 
 .stat-value {
@@ -260,6 +351,22 @@ const predictions = ref([
   letter-spacing: 2px;
 }
 
+.real-result-value {
+  background: #f0fdf4; /* Light green background for result */
+  color: #006847;
+  padding: 0.5rem 1.25rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  border: 1px solid #dcfce7;
+}
+
+.real-result-value.pending {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
 .status-cell {
   display: inline-flex;
   align-items: center;
@@ -267,6 +374,20 @@ const predictions = ref([
   color: var(--primary-color);
   font-weight: 700;
   font-size: 0.85rem;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clickable:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.status-pending {
+  color: #CE1126; /* Mexican Red for attention */
 }
 
 .text-center { text-align: center !important; }

@@ -1,5 +1,5 @@
 <script setup>
-import { Zap } from 'lucide-vue-next'
+import { Zap, Trophy, Medal, Award } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -29,38 +29,35 @@ import { Zap } from 'lucide-vue-next'
       <!-- Right Column: Prize Ranking -->
       <aside class="prizes-sidebar animate-fade-in-delayed">
         <div class="prizes-card glass-card">
-          <h2 class="prizes-title">Ranking de Premios</h2>
+          <h2 class="prizes-title">Bolsa de Premios</h2>
           
-          <div class="prize-item">
-            <div class="prize-rank rank-1">1</div>
-            <div class="prize-image-wrap">
-              <img src="/prize_1_tv.png" alt="Smart TV 55 Pulgadas" class="prize-img" />
+          <div class="prize-item prize-gold">
+            <div class="prize-icon-wrap">
+              <Trophy :size="40" class="icon-gold" />
             </div>
             <div class="prize-details">
-              <h3>Smart TV 55"</h3>
-              <p>Primer Lugar</p>
+              <h3>$5,000</h3>
+              <p>Repartidos en los 1ros lugares</p>
             </div>
           </div>
 
-          <div class="prize-item">
-            <div class="prize-rank rank-2">2</div>
-            <div class="prize-image-wrap">
-              <img src="/prize_2_air_fryer.png" alt="Freidora de Aire Digital" class="prize-img" />
+          <div class="prize-item prize-silver">
+            <div class="prize-icon-wrap">
+              <Medal :size="40" class="icon-silver" />
             </div>
             <div class="prize-details">
-              <h3>Freidora de Aire</h3>
-              <p>Segundo Lugar</p>
+              <h3>$3,000</h3>
+              <p>Repartidos en los 2dos lugares</p>
             </div>
           </div>
 
-          <div class="prize-item">
-            <div class="prize-rank rank-3">3</div>
-            <div class="prize-image-wrap">
-              <img src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=400&q=80" alt="Cafetera de Goteo" class="prize-img" />
+          <div class="prize-item prize-bronze">
+            <div class="prize-icon-wrap">
+              <Award :size="40" class="icon-bronze" />
             </div>
             <div class="prize-details">
-              <h3>Cafetera de Goteo</h3>
-              <p>Tercer Lugar</p>
+              <h3>$2,000</h3>
+              <p>Repartidos en los 3ros lugares</p>
             </div>
           </div>
         </div>
@@ -265,82 +262,78 @@ import { Zap } from 'lucide-vue-next'
 .prize-item {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.5);
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .prize-item:last-child {
   margin-bottom: 0;
 }
 
-.prize-item:hover {
-  transform: translateX(10px);
-  background: white;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+.prize-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
 }
 
-.prize-rank {
-  width: 40px;
-  height: 40px;
+.prize-gold::before { background: linear-gradient(to bottom, #FFD700, #FDB931); }
+.prize-silver::before { background: linear-gradient(to bottom, #E0E0E0, #9E9E9E); }
+.prize-bronze::before { background: linear-gradient(to bottom, #CD7F32, #8B4513); }
+
+.prize-item:hover {
+  transform: translateX(8px);
+  background: white;
+}
+
+.prize-gold:hover { box-shadow: 0 10px 25px rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 0.4); }
+.prize-silver:hover { box-shadow: 0 10px 25px rgba(158, 158, 158, 0.2); border-color: rgba(158, 158, 158, 0.4); }
+.prize-bronze:hover { box-shadow: 0 10px 25px rgba(205, 127, 50, 0.2); border-color: rgba(205, 127, 50, 0.4); }
+
+.prize-icon-wrap {
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: white;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.03);
   flex-shrink: 0;
 }
 
-.rank-1 { background: linear-gradient(135deg, #FFD700, #FDB931); }
-.rank-2 { background: linear-gradient(135deg, #C0C0C0, #E0E0E0); color: #333; }
-.rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); }
-
-.prize-image-wrap {
-  width: 80px;
-  height: 80px;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-}
-
-.prize-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.prize-item:hover .prize-img {
-  transform: scale(1.1);
-}
-
-.placeholder-img {
-  font-size: 2.5rem;
-}
+.icon-gold { color: #FDB931; filter: drop-shadow(0 4px 6px rgba(253, 185, 49, 0.4)); }
+.icon-silver { color: #9E9E9E; filter: drop-shadow(0 4px 6px rgba(158, 158, 158, 0.4)); }
+.icon-bronze { color: #CD7F32; filter: drop-shadow(0 4px 6px rgba(205, 127, 50, 0.4)); }
 
 .prize-details {
   flex: 1;
 }
 
 .prize-details h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 0.2rem;
+  letter-spacing: -1px;
 }
 
+.prize-gold h3 { background: linear-gradient(to right, #B8860B, #FDB931); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.prize-silver h3 { background: linear-gradient(to right, #757575, #BDBDBD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.prize-bronze h3 { background: linear-gradient(to right, #8B4513, #CD7F32); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
 .prize-details p {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  line-height: 1.3;
 }
 
 .animate-fade-in-delayed {

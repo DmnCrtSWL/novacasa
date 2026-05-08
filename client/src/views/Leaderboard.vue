@@ -27,46 +27,19 @@ const goToPage = (page) => {
   currentPage.value = page
 }
 
-onMounted(() => {
-  // Generate 100 random users
-  const firstNames = ['Carlos', 'Ana', 'Luis', 'Maria', 'Jose', 'Juan', 'Diego', 'Sofia', 'Jorge', 'Elena', 'Fernando', 'Ricardo', 'Alejandro', 'Daniela', 'Miguel']
-  const lastNames = ['Gomez', 'Rodriguez', 'Cortes', 'Perez', 'Lopez', 'Martinez', 'Hernandez', 'Garcia', 'Gonzalez', 'Ruiz']
-  
-  const generated = []
-  
-  // Create a realistic spread of scores (max points ~36 if 18 matches, let's say max around 32 for realism)
-  for (let i = 0; i < 100; i++) {
-    const fName = firstNames[Math.floor(Math.random() * firstNames.length)]
-    const lName = lastNames[Math.floor(Math.random() * lastNames.length)]
-    
-    // Most users fall in the middle bell curve, few at the top
-    let baseScore = Math.floor(Math.random() * 15) + 8 // 8 to 22
-    if (Math.random() > 0.8) baseScore += Math.floor(Math.random() * 10) // Boost top 20%
-    if (i === 0) baseScore = 32 // Ensure some high scores
-    if (i === 1) baseScore = 30
-    if (i === 2) baseScore = 29
-    
-    generated.push({
-      id: i + 1,
-      name: `${fName} ${lName}`,
-      username: `@${fName.toLowerCase()}${Math.floor(Math.random() * 999)}`,
-      points: baseScore
-    })
-  }
-  
-  // Sort descending by points
-  generated.sort((a, b) => b.points - a.points)
-  
-  // Assign rank considering ties
-  let currentRank = 1
-  for (let i = 0; i < generated.length; i++) {
-    if (i > 0 && generated[i].points < generated[i - 1].points) {
-      currentRank = i + 1
+const fetchLeaderboard = async () => {
+  try {
+    const res = await fetch('http://localhost:3000/api/leaderboard')
+    if (res.ok) {
+      leaderboard.value = await res.json()
     }
-    generated[i].rank = currentRank
+  } catch (err) {
+    console.error('Error fetching leaderboard:', err)
   }
-  
-  leaderboard.value = generated
+}
+
+onMounted(() => {
+  fetchLeaderboard()
 })
 
 const getMedalColor = (rank) => {

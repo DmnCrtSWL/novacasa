@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import MatchCard from '../components/MatchCard.vue'
-import { Timer, Trophy, ChevronRight, Settings } from 'lucide-vue-next'
+import { Timer, Trophy, ChevronRight } from 'lucide-vue-next'
 
 const router = useRouter()
+const route = useRoute()
 
 // Countdown logic
 const countdown = ref({
@@ -43,17 +44,61 @@ const updateCountdown = () => {
   }
 }
 
+const fetchPredictions = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    const res = await fetch('http://localhost:3000/api/predictions', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    
+    if (res.ok) {
+      const data = await res.json()
+      
+      data.predictions.forEach(pred => {
+        for (const md of matchdays.value) {
+          const m = md.matches.find(m => m.id === pred.match_id)
+          if (m) {
+            m.homeScore = pred.home_score !== null ? pred.home_score : ''
+            m.awayScore = pred.away_score !== null ? pred.away_score : ''
+            break
+          }
+        }
+      })
+      
+      if (data.champion_id) {
+        selectedChampion.value = data.champion_id
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching predictions:', err)
+  }
+}
+
 let timer
 onMounted(() => {
   updateCountdown()
   timer = setInterval(updateCountdown, 1000)
+  
+  // Set matchday from query param
+  if (route.query.jornada) {
+    const j = parseInt(route.query.jornada)
+    if (!isNaN(j) && j >= 1 && j <= matchdays.value.length) {
+      currentMatchdayIndex.value = j - 1
+    }
+  }
+  
+  if (isAuthenticated.value) {
+    fetchPredictions()
+  }
 })
 
 onUnmounted(() => {
   clearInterval(timer)
 })
 
-const isAuthenticated = ref(false)
+const isAuthenticated = ref(!!localStorage.getItem('token'))
 const isLoginMode = ref(true)
 
 const authForm = ref({
@@ -128,12 +173,14 @@ const nextMatchday = () => {
   }
 }
 
-const showKnockoutPhase = ref(false)
-
-const toggleKnockoutPhase = () => {
-  showKnockoutPhase.value = !showKnockoutPhase.value
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+const prevMatchday = () => {
+  if (currentMatchdayIndex.value > 0) {
+    currentMatchdayIndex.value--
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
+
+const showKnockoutPhase = ref(false)
 
 const qualifiedTeams = ref([
   { id: 1, name: 'México', logo: 'https://flagcdn.com/w160/mx.png' },
@@ -160,12 +207,60 @@ const selectTeam = (teamId) => {
   selectedChampion.value = teamId
 }
 
-const saveAll = () => {
-  if (currentMatchdayIndex.value === matchdays.value.length - 1 || showKnockoutPhase.value) {
-    alert('¡Todas tus predicciones se han guardado con éxito!')
-    router.push('/mis-pronosticos')
-  } else {
-    alert('¡Tu progreso ha sido guardado!')
+const isSaving = ref(false)
+
+const toast = ref({ show: false, type: 'success', message: '' })
+let toastTimer = null
+
+const showToast = (type, message, redirectAfter = null) => {
+  if (toastTimer) clearTimeout(toastTimer)
+  toast.value = { show: true, type, message }
+  toastTimer = setTimeout(() => {
+    toast.value.show = false
+    if (redirectAfter) router.push(redirectAfter)
+  }, 2500)
+}
+
+const closeToast = () => {
+  if (toastTimer) clearTimeout(toastTimer)
+  toast.value.show = false
+}
+
+const saveAll = async () => {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    showToast('error', 'Debes iniciar sesión para guardar tus pronósticos.')
+    return
+  }
+
+  isSaving.value = true
+  try {
+    const allMatches = []
+    matchdays.value.forEach(md => {
+      md.matches.forEach(m => { allMatches.push(m) })
+    })
+
+    const res = await fetch('http://localhost:3000/api/predictions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ matches: allMatches, champion_id: selectedChampion.value })
+    })
+
+    if (!res.ok) throw new Error('Error al guardar en el servidor')
+
+    if (currentMatchdayIndex.value === matchdays.value.length - 1 || showKnockoutPhase.value) {
+      showToast('success', '¡Todas tus predicciones se han guardado con éxito!', '/mis-pronosticos')
+    } else {
+      showToast('success', '¡Tu progreso ha sido guardado!')
+    }
+  } catch (err) {
+    console.error(err)
+    showToast('error', 'Hubo un error al guardar tus pronósticos.')
+  } finally {
+    isSaving.value = false
   }
 }
 </script>
@@ -242,10 +337,6 @@ const saveAll = () => {
     <!-- QUINIELA FLOW -->
     <div v-else class="quiniela-content">
       
-      <!-- DEMO TOGGLE BUTTON -->
-      <button class="demo-toggle-btn" @click="toggleKnockoutPhase" title="Cambiar vista de fase">
-        <Settings :size="24" />
-      </button>
 
       <template v-if="!showKnockoutPhase">
         <!-- Progress Indicator -->
@@ -321,8 +412,9 @@ const saveAll = () => {
         <button 
           @click="saveAll" 
           class="btn-save-all"
+          :disabled="isSaving"
         >
-          {{ currentMatchdayIndex === matchdays.length - 1 ? 'GUARDAR TODO' : 'GUARDAR PROGRESO' }}
+          {{ isSaving ? 'GUARDANDO...' : (currentMatchdayIndex === matchdays.length - 1 ? 'GUARDAR TODO' : 'GUARDAR PROGRESO') }}
         </button>
 
         <button 
@@ -391,16 +483,32 @@ const saveAll = () => {
             <button 
               @click="saveAll" 
               class="btn-save-all"
-              :disabled="!selectedChampion"
-              :class="{ 'opacity-50 cursor-not-allowed': !selectedChampion }"
+              :disabled="!selectedChampion || isSaving"
+              :class="{ 'opacity-50 cursor-not-allowed': !selectedChampion || isSaving }"
             >
-              GUARDAR PRONÓSTICO FINAL
+              {{ isSaving ? 'GUARDANDO...' : 'GUARDAR PRONÓSTICO FINAL' }}
             </button>
           </div>
         </div>
       </template>
     </div>
   </div>
+
+  <!-- Toast notification -->
+  <transition name="toast-slide">
+    <div v-if="toast.show" class="toast-overlay" @click.self="closeToast">
+      <div class="toast-card" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'">
+        <div class="toast-icon">
+          <svg v-if="toast.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </div>
+        <p class="toast-message">{{ toast.message }}</p>
+        <button class="toast-close" @click="closeToast">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <style scoped>
@@ -718,27 +826,6 @@ const saveAll = () => {
   cursor: not-allowed;
 }
 
-/* Demo Toggle Button */
-.demo-toggle-btn {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  padding: 1rem 0.5rem;
-  cursor: pointer;
-  z-index: 1000;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
-}
-
-.demo-toggle-btn:hover {
-  background: #004d35;
-  padding-right: 1rem;
-}
 
 /* Knockout Phase */
 .teams-grid {
@@ -812,5 +899,120 @@ const saveAll = () => {
   .btn-primary, .btn-secondary, .btn-save-all {
     width: 100%;
   }
+}
+
+/* Toast */
+.toast-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+}
+
+.toast-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  max-width: 380px;
+  width: calc(100% - 2rem);
+  border-left: 5px solid;
+  position: relative;
+}
+
+.toast-success {
+  border-color: #006847;
+}
+
+.toast-error {
+  border-color: #CE1126;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-success .toast-icon {
+  background: rgba(0, 104, 71, 0.1);
+  color: #006847;
+}
+
+.toast-error .toast-icon {
+  background: rgba(206, 17, 38, 0.1);
+  color: #CE1126;
+}
+
+.toast-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #9a9aaa;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.toast-close:hover {
+  background: #f0f0f0;
+  color: #1a1a2e;
+}
+
+.toast-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.toast-slide-enter-active .toast-card,
+.toast-slide-leave-active .toast-card {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.toast-slide-enter-from,
+.toast-slide-leave-to {
+  opacity: 0;
+}
+
+.toast-slide-enter-from .toast-card,
+.toast-slide-leave-to .toast-card {
+  transform: scale(0.92);
+  opacity: 0;
 }
 </style>
