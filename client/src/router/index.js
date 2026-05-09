@@ -78,7 +78,16 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  let user = null
+  try {
+    const stored = localStorage.getItem('user')
+    if (stored && stored !== 'undefined') {
+      user = JSON.parse(stored)
+    }
+  } catch (err) {
+    console.error('Error parsing user from localStorage:', err)
+  }
+  
   const isAdmin = user && user.is_admin
 
   if (to.meta.requiresAuth && !isAuthenticated) {

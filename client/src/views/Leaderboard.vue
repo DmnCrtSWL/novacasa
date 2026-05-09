@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Medal, Award, TrendingUp, Trophy } from 'lucide-vue-next'
-import { API_BASE_URL } from '../config'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const leaderboard = ref([])
 

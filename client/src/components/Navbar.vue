@@ -11,8 +11,17 @@ const isDropdownOpen = ref(false)
 const user = ref(null)
 
 const updateUser = () => {
-  const stored = localStorage.getItem('user')
-  user.value = stored ? JSON.parse(stored) : null
+  try {
+    const stored = localStorage.getItem('user')
+    if (stored && stored !== 'undefined') {
+      user.value = JSON.parse(stored)
+    } else {
+      user.value = null
+    }
+  } catch (err) {
+    console.error('Error updating user:', err)
+    user.value = null
+  }
 }
 
 onMounted(() => {

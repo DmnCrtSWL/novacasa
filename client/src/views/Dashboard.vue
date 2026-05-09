@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { Trophy, CheckCircle, ChevronRight, Star } from 'lucide-vue-next'
-import { API_BASE_URL } from '../config'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 
 const matchSchedule = [
@@ -54,30 +55,37 @@ const fetchDashboardData = async () => {
     if (matchesRes.ok && predsRes.ok) {
       const matchesData = await matchesRes.json()
       const predsData = await predsRes.json()
-      const userPreds = predsData.predictions
+      const userPreds = predsData.predictions || []
 
-      predictions.value = matchesData.map(match => {
-        const found = userPreds.find(p => p.match_id === match.id)
+      if (!Array.isArray(matchesData)) {
+        console.warn('matchesData is not an array:', matchesData)
+        return
+      }
+
+      predictions.value = (matchesData || []).map(match => {
+        if (!match) return null;
+        const found = userPreds.find(p => p && p.match_id === match.id)
         
         // Format real result
         let realResult = 'Pendiente'
-        if (match.home_score_real !== null && match.away_score_real !== null) {
+        if (match.home_score_real !== undefined && match.home_score_real !== null && 
+            match.away_score_real !== undefined && match.away_score_real !== null) {
           realResult = `${match.home_score_real} - ${match.away_score_real}`
         }
 
         return {
-          id: match.id,
-          jornada: match.jornada,
-          date: match.date_text,
-          home: match.home_team,
-          away: match.away_team,
-          homeLogo: match.home_logo,
-          awayLogo: match.away_logo,
+          id: match.id || Math.random(),
+          jornada: match.jornada || '?',
+          date: match.date_text || '',
+          home: match.home_team || '?',
+          away: match.away_team || '?',
+          homeLogo: match.home_logo || '',
+          awayLogo: match.away_logo || '',
           prediction: found ? `${found.home_score} - ${found.away_score}` : 'Pendiente',
           realResult: realResult,
           status: found ? 'Guardado' : 'Sin completar'
         }
-      })
+      }).filter(p => p !== null)
 
       completedMatches.value = userPreds.length
       totalMatches.value = matchesData.length

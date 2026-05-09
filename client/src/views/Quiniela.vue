@@ -3,7 +3,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MatchCard from '../components/MatchCard.vue'
 import { Timer, Trophy, ChevronRight } from 'lucide-vue-next'
-import { API_BASE_URL } from '../config'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const router = useRouter()
 const route = useRoute()
@@ -216,7 +217,7 @@ let toastTimer = null
 
 const showToast = (type, message, redirectAfter = null) => {
   if (toastTimer) clearTimeout(toastTimer)
-  toast.value = { show: true, type, message }
+  toast.value = { show: true, type, message, redirectAfter }
   toastTimer = setTimeout(() => {
     toast.value.show = false
     if (redirectAfter) router.push(redirectAfter)
@@ -224,8 +225,10 @@ const showToast = (type, message, redirectAfter = null) => {
 }
 
 const closeToast = () => {
+  const pendingRedirect = toast.value.redirectAfter
   if (toastTimer) clearTimeout(toastTimer)
   toast.value.show = false
+  if (pendingRedirect) router.push(pendingRedirect)
 }
 
 const saveAll = async () => {
