@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MatchCard from '../components/MatchCard.vue'
 import { Timer, Trophy, ChevronRight } from 'lucide-vue-next'
