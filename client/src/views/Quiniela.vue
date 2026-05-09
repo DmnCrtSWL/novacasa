@@ -99,6 +99,7 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(timer)
   if (toastTimer) clearTimeout(toastTimer)
+  if (redirectTimer) clearTimeout(redirectTimer)
 })
 
 const isAuthenticated = ref(!!localStorage.getItem('token'))
@@ -214,21 +215,34 @@ const isSaving = ref(false)
 
 const toast = ref({ show: false, type: 'success', message: '' })
 let toastTimer = null
+let redirectTimer = null
+
+const TOAST_LEAVE_DURATION = 250 // ms, must be > toast-slide leave transition (0.2s)
+
+const scheduleRedirect = (path) => {
+  if (redirectTimer) clearTimeout(redirectTimer)
+  redirectTimer = setTimeout(() => {
+    redirectTimer = null
+    router.push(path)
+  }, TOAST_LEAVE_DURATION)
+}
 
 const showToast = (type, message, redirectAfter = null) => {
   if (toastTimer) clearTimeout(toastTimer)
+  if (redirectTimer) clearTimeout(redirectTimer)
   toast.value = { show: true, type, message, redirectAfter }
   toastTimer = setTimeout(() => {
     toast.value.show = false
-    if (redirectAfter) router.push(redirectAfter)
+    if (redirectAfter) scheduleRedirect(redirectAfter)
   }, 2500)
 }
 
 const closeToast = () => {
   const pendingRedirect = toast.value.redirectAfter
   if (toastTimer) clearTimeout(toastTimer)
+  if (redirectTimer) clearTimeout(redirectTimer)
   toast.value.show = false
-  if (pendingRedirect) router.push(pendingRedirect)
+  if (pendingRedirect) scheduleRedirect(pendingRedirect)
 }
 
 const saveAll = async () => {
