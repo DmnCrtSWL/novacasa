@@ -96,6 +96,15 @@ onMounted(() => {
   }
 })
 
+watch(() => route.query.jornada, (newJ) => {
+  if (newJ) {
+    const j = parseInt(newJ)
+    if (!isNaN(j) && j >= 1 && j <= matchdays.value.length) {
+      currentMatchdayIndex.value = j - 1
+    }
+  }
+})
+
 onUnmounted(() => {
   clearInterval(timer)
   if (toastTimer) clearTimeout(toastTimer)
@@ -511,31 +520,32 @@ const saveAll = async () => {
         </div>
       </template>
     </div>
-  </div>
 
-  <teleport to="body">
-    <transition name="toast-slide">
-      <div v-if="toast.show" class="toast-overlay" @click.self="closeToast">
-        <div class="toast-card" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'">
-          <div class="toast-icon">
-            <svg v-if="toast.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    <teleport to="body">
+      <transition name="toast-slide">
+        <div v-if="toast.show" class="toast-overlay" @click.self="closeToast">
+          <div class="toast-card" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'">
+            <div class="toast-icon">
+              <svg v-if="toast.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </div>
+            <p class="toast-message">{{ toast.message }}</p>
+            <button class="toast-close" @click="closeToast">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
-          <p class="toast-message">{{ toast.message }}</p>
-          <button class="toast-close" @click="closeToast">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
         </div>
-      </div>
-    </transition>
-  </teleport>
+      </transition>
+    </teleport>
+
+  </div>
 </template>
 
 <style scoped>
 .quiniela-view {
   max-width: 1300px;
   margin: 0 auto;
-  padding: 6rem 2rem 4rem;
+  padding: 8rem 2rem 4rem;
   min-height: 100vh;
 }
 
