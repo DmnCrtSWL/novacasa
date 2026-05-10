@@ -222,6 +222,12 @@ const selectTeam = (teamId) => {
 
 const isSaving = ref(false)
 
+const showSuccessModal = ref(false)
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  router.push('/mis-pronosticos')
+}
+
 const toast = ref({ show: false, type: 'success', message: '' })
 let toastTimer = null
 let redirectTimer = null
@@ -280,7 +286,8 @@ const saveAll = async () => {
     if (!res.ok) throw new Error('Error al guardar en el servidor')
 
     if (currentMatchdayIndex.value === matchdays.value.length - 1 || showKnockoutPhase.value) {
-      showToast('success', '¡Todas tus predicciones se han guardado con éxito!', '/mis-pronosticos')
+      showToast('success', '¡Todas tus predicciones se han guardado con éxito!')
+      showSuccessModal.value = true
     } else {
       showToast('success', '¡Tu progreso ha sido guardado!')
     }
@@ -344,6 +351,12 @@ const saveAll = async () => {
                 <input type="password" v-model="authForm.confirmPassword" required placeholder="********" />
               </div>
             </template>
+          </div>
+
+          <div v-if="!isLoginMode" class="acceptance-msg-inline">
+            Al registrarte, declaras conocer y aceptar el 
+            <router-link to="/reglas" target="_blank">Reglamento</router-link> y el 
+            <router-link to="/privacidad" target="_blank">Aviso de Privacidad</router-link>.
           </div>
 
           <button type="submit" class="btn-auth-submit">
@@ -522,6 +535,28 @@ const saveAll = async () => {
     </div>
 
     <teleport to="body">
+      <!-- SUCCESS MODAL -->
+      <transition name="modal-fade">
+        <div v-if="showSuccessModal" class="modal-overlay">
+          <div class="success-modal glass-card animate-scale-up">
+            <div class="modal-brand-bar"></div>
+            <div class="modal-icon-wrap">
+              <Trophy :size="48" class="text-green" />
+            </div>
+            <h2 class="modal-title">¡Gracias por participar!</h2>
+            <p class="modal-text">
+              Tus pronósticos han sido registrados correctamente. Recuerda revisar la 
+              <strong class="text-green">tabla de posiciones</strong> para conocer a los ganadores 
+              y participar en la siguiente ronda.
+            </p>
+            <p class="modal-wish">¡Buena suerte!</p>
+            <button @click="closeSuccessModal" class="btn-modal-close">
+              ENTENDIDO
+            </button>
+          </div>
+        </div>
+      </transition>
+
       <transition name="toast-slide">
         <div v-if="toast.show" class="toast-overlay" @click.self="closeToast">
           <div class="toast-card" :class="toast.type === 'success' ? 'toast-success' : 'toast-error'">
@@ -631,6 +666,20 @@ const saveAll = async () => {
   outline: none;
   border-color: #006847;
   box-shadow: 0 0 0 3px rgba(0, 104, 71, 0.1);
+}
+
+.acceptance-msg-inline {
+  font-size: 0.75rem;
+  color: #6b6375;
+  line-height: 1.4;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.acceptance-msg-inline a {
+  color: #CE1126;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .btn-auth-submit {
@@ -1005,6 +1054,109 @@ const saveAll = async () => {
 
 .toast-close:hover { background: #f0f0f0; color: #1a1a2e; }
 .toast-close svg   { width: 14px; height: 14px; }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9500;
+  padding: 2rem;
+}
+
+.success-modal {
+  max-width: 500px;
+  width: 100%;
+  background: white;
+  padding: 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.modal-brand-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #006847 33.33%, #ffffff 33.33%, #ffffff 66.66%, #CE1126 66.66%);
+}
+
+.modal-icon-wrap {
+  width: 80px;
+  height: 80px;
+  background: rgba(0, 104, 71, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.modal-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 1rem;
+}
+
+.modal-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 1.5rem;
+}
+
+.modal-wish {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #CE1126;
+  margin-bottom: 2rem;
+}
+
+.btn-modal-close {
+  background: #006847;
+  color: white;
+  border: none;
+  padding: 1rem 3rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-modal-close:hover {
+  background: #00573c;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 104, 71, 0.2);
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 .toast-slide-enter-active,
 .toast-slide-leave-active {

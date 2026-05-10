@@ -61,6 +61,11 @@ const routes = [
     name: 'AdminResults',
     component: () => import('../views/AdminResults.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/privacidad',
+    name: 'Privacy',
+    component: () => import('../views/Privacy.vue')
   }
 ]
 

@@ -128,7 +128,11 @@ async function handleRegister() {
           />
         </div>
 
-        <p v-if="errorMsg" class="msg msg-error">{{ errorMsg }}</p>
+        <div class="acceptance-msg">
+          Al hacer clic en registrarse, declaras conocer y aceptar el 
+          <router-link to="/reglas" target="_blank">Reglamento</router-link> y el 
+          <router-link to="/privacidad" target="_blank">Aviso de Privacidad</router-link>.
+        </div>
 
         <button type="submit" class="btn-submit" :disabled="loading">
           <span v-if="loading" class="spinner"></span>
@@ -249,6 +253,20 @@ async function handleRegister() {
   background: #e8f5e9;
   color: #2e7d32;
   border: 1px solid #c8e6c9;
+}
+
+.acceptance-msg {
+  font-size: 0.75rem;
+  color: #6b6375;
+  line-height: 1.4;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.acceptance-msg a {
+  color: #006847;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .btn-submit {
